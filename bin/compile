@@ -57,8 +57,8 @@ echo "done"
 # Install Node.js
 nodejsVersion=${NODEJS_VERSION:-4.0.0}
 echo "-----> Installing Node.js ${nodejsVersion}..."
-install_nodejs ${nodejsVersion} /tmp/nodejs 2>&1 | sed -u 's/^/       /'
-PATH=/tmp/nodejs/bin:$PATH
+install_nodejs ${nodejsVersion} ${BUILD_DIR}/.heroku/nodejs 2>&1 | sed -u 's/^/       /'
+PATH=${BUILD_DIR}/.heroku/nodejs/bin:$PATH
 
 # Determine Leiningen version
 if [ "$(grep ":min-lein-version[[:space:]]\+\"2" $BUILD_DIR/project.clj)" != "" ]; then
@@ -178,7 +178,7 @@ fi
 PROFILE_PATH="$BUILD_DIR/.profile.d/clojure.sh"
 mkdir -p $(dirname $PROFILE_PATH)
 echo "export LEIN_NO_DEV=\"\${LEIN_NO_DEV:-yes}\"" >> $PROFILE_PATH
-echo 'export PATH="$HOME/.jdk/bin:$HOME/.lein/bin:$PATH"' >> $PROFILE_PATH
+echo 'export PATH="$HOME/.heroku/nodejs/bin:$HOME/.jdk/bin:$HOME/.lein/bin:$PATH"' >> $PROFILE_PATH
 
 # default Procfile
 if [ ! -r $BUILD_DIR/Procfile ]; then
