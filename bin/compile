@@ -9,6 +9,21 @@ export BUILD_DIR=$1
 export CACHE_DIR=$2
 export ENV_DIR=$3
 
+# Install node.js
+install_nodejs() {
+  local version="$1"
+  local dir="$2"
+  local os="linux"
+  local cpu="x64"
+
+  echo "Downloading and installing node $version..."
+  local download_url="http://s3pository.heroku.com/node/v$version/node-v$version-$os-$cpu.tar.gz"
+  curl "$download_url" --silent --fail -o /tmp/node.tar.gz || (echo "Unable to download node $version; does it exist?" && false)
+  tar xzf /tmp/node.tar.gz -C /tmp
+  mv /tmp/node-v$version-$os-$cpu $dir
+  chmod +x $dir/bin/*
+}
+
 # Load config vars into environment
 export_env_dir() {
   env_dir=$1
@@ -38,6 +53,12 @@ echo -n "-----> Installing OpenJDK ${javaVersion}..."
 install_java ${BUILD_DIR} ${javaVersion}
 jdk_overlay ${BUILD_DIR}
 echo "done"
+
+# Install Node.js
+nodejsVersion=${NODEJS_VERSION:-4.0.0}
+echo "-----> Installing Node.js ${nodejsVersion}..."
+install_nodejs ${nodejsVersion} /tmp/nodejs 2>&1 | sed -u 's/^/       /'
+PATH=/tmp/nodejs/bin:$PATH
 
 # Determine Leiningen version
 if [ "$(grep ":min-lein-version[[:space:]]\+\"2" $BUILD_DIR/project.clj)" != "" ]; then
